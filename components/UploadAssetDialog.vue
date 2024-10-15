@@ -111,6 +111,7 @@ const selectFile = async function (event) {
           const generalMetadata = result.media.track[0]
           const videoMetadata = result.media.track[1]
           const audioMetaData = result.media.track[2]
+          console.log(generalMetadata, videoMetadata)
           uploadForm.metadata.fileName = file.name
           if (uploadForm.title === "") {
             uploadForm.title = generalMetadata.Title
@@ -119,11 +120,11 @@ const selectFile = async function (event) {
 
           if (file.type.startsWith("video/")) {
             uploadForm.type = "video"
-            uploadForm.metadata.duration = videoMetadata.duration
+            uploadForm.metadata.duration = generalMetadata.Duration
             uploadForm.metadata.height = videoMetadata.Height
             uploadForm.metadata.width = videoMetadata.Width
             uploadForm.metadata.aspectRatio = useFilters().getAspectRatioString(videoMetadata.Width, videoMetadata.Height)
-            uploadForm.metadata.frameCount = videoMetadata.FrameCount
+            uploadForm.metadata.frameCount = Math.round(generalMetadata.Duration * videoMetadata.FrameRate)
             uploadForm.metadata.fps = videoMetadata.FrameRate
             uploadForm.metadata.audioFormat = audioMetaData.Format
             uploadForm.metadata.audioSampleRate = audioMetaData.SamplingRate
