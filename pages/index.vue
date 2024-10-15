@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar color="primary">
-      <v-app-bar-title href="/">Title</v-app-bar-title>
+      <v-app-bar-title href="/">Not8</v-app-bar-title>
       <v-spacer></v-spacer>
 
       <v-btn

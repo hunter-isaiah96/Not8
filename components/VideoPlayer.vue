@@ -92,8 +92,12 @@
           cols="4"
         >
           <v-menu location="top">
-            <template v-slot:activator="{ props }">
-              <v-btn v-bind="props">{{ timeFormated }}</v-btn>
+            <template v-slot:activator="{ props, isActive }">
+              <v-btn
+                :append-icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                v-bind="props"
+                >{{ timeFormated }}</v-btn
+              >
             </template>
             <v-card subtitle="Time Format">
               <v-list

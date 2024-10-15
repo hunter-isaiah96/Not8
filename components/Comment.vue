@@ -2,12 +2,14 @@
   <v-card>
     <template v-slot:prepend>
       <v-avatar color="primary">
-        <span class="text-uppercase">{{ comment.expand.user.username[0] }}</span>
+        <v-img :src="user.avatar"></v-img>
       </v-avatar>
     </template>
     <template v-slot:title>
       <div class="d-flex align-center">
         <span class="text-subtitle-2 text-capitalize">{{ comment.expand.user.username }}</span>
+        <span>&nbsp;-&nbsp;</span>
+        <span class="text-subtitle-2 text-capitalize opacity-40">{{ useFilters().timeAgo(comment.created) }}</span>
         <v-spacer></v-spacer>
         <div v-if="user.id == comment.user">
           <v-menu>
@@ -37,14 +39,15 @@
       </div>
     </template>
     <template v-slot:subtitle>
-      <span
-        v-if="comment.timed"
-        class="text-white bg-primary cursor-pointer px-1"
-        @click="goToTimestamp"
-      >
-        {{ commentTime }}
-      </span>
-      <span>&nbsp;</span>
+      <div v-if="comment.timed">
+        <span
+          class="text-white bg-primary cursor-pointer px-1"
+          @click="goToTimestamp"
+        >
+          {{ commentTime }}
+        </span>
+        <span>&nbsp;</span>
+      </div>
       <span class="text-subtitle-2">{{ comment.text }}</span>
     </template>
     <v-card-text
@@ -65,7 +68,7 @@
 import { useUserStore } from "~/store/user"
 import { useVideoStore } from "~/store/video"
 import { useCommentsStore } from "~/store/comments"
-
+const pb = usePocketbase()
 const userStore = useUserStore()
 const videoStore = useVideoStore()
 const commentsStore = useCommentsStore()
