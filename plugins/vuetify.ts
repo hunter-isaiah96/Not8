@@ -9,13 +9,6 @@ const myCustomDarkTheme: ThemeDefinition = {
     background: "#040B1B",
     surface: "#1C222E",
     primary: "#5B52FE",
-    "primary-darken-1": "#20222B",
-    secondary: "#03DAC6",
-    "secondary-darken-1": "#018786",
-    error: "#B00020",
-    info: "#2196F3",
-    success: "#4CAF50",
-    warning: "#FB8C00",
   },
 }
 

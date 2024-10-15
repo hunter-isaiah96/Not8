@@ -1,6 +1,13 @@
 <template>
   <v-row>
+    <v-empty-state
+      v-if="comments.length == 0"
+      icon="mdi-comment-text-outline"
+      title="No Comments..."
+      text="It's quiet in here. Start the conversation by leaving the first comment"
+    ></v-empty-state>
     <v-col
+      v-else
       cols="12"
       v-for="comment in comments"
       :key="comment.id"

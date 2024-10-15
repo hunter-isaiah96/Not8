@@ -10,7 +10,7 @@
         <span class="text-subtitle-2 text-capitalize">{{ comment.expand.user.username }}</span>
         <v-spacer></v-spacer>
         <div v-if="user.id == comment.user">
-          <v-menu close-on-content-click="true">
+          <v-menu>
             <template v-slot:activator="{ props }">
               <v-btn
                 icon="mdi-dots-vertical"
@@ -23,33 +23,13 @@
             <v-card>
               <v-list>
                 <v-list-item append-icon="mdi-pencil"> Edit </v-list-item>
-                <v-dialog max-width="500">
-                  <template v-slot:activator="{ props }">
-                    <v-list-item
-                      v-bind="props"
-                      append-icon="mdi-delete"
-                    >
-                      Delete
-                    </v-list-item>
-                  </template>
-                  <template v-slot:default="{ isActive }">
-                    <v-card title="Delete Comment">
-                      <v-card-text> Are you sure you wish to delete this comment? </v-card-text>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          text="No"
-                          @click="isActive.value = false"
-                        ></v-btn>
-                        <v-btn
-                          text="Yes"
-                          color="error"
-                          @click="isActive.value = false"
-                        ></v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </template>
-                </v-dialog>
+                <v-list-item
+                  @click="deleteComment(comment.id)"
+                  base-color="error"
+                  append-icon="mdi-delete"
+                >
+                  Delete
+                </v-list-item>
               </v-list>
             </v-card>
           </v-menu>
@@ -84,10 +64,14 @@
 <script setup>
 import { useUserStore } from "~/store/user"
 import { useVideoStore } from "~/store/video"
+import { useCommentsStore } from "~/store/comments"
+
 const userStore = useUserStore()
 const videoStore = useVideoStore()
+const commentsStore = useCommentsStore()
 const { user } = storeToRefs(userStore)
 const { videoPlayerDetails } = storeToRefs(videoStore)
+const { deleteComment } = commentsStore
 const props = defineProps({
   comment: Object,
   controls: {

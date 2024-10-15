@@ -27,7 +27,14 @@ export const useCommentsStore = defineStore("commentsStore", () => {
     }
   }
 
+  const deleteComment = async function (commentId) {
+    try {
+      await pb.collection("comments").delete(commentId)
+      fetchComments(route.params.id)
+    } catch (error) {}
+  }
+
   const timestampedComments = computed(() => comments.value.filter((value) => value.timed))
 
-  return { comments, fetchComments, addComment, timestampedComments }
+  return { comments, fetchComments, addComment, deleteComment, timestampedComments }
 })
