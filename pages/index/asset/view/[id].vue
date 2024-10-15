@@ -13,12 +13,12 @@
   <v-navigation-drawer
     width="500"
     location="right"
+    floating
   >
-    <v-list>
-      <v-card
-        :title="asset.title"
-        :text="asset.description"
-      >
+    <template v-slot:prepend>
+      <div class="pa-2">
+        <v-card-title>{{ asset.title }}</v-card-title>
+        <v-card-subtitle>{{ asset.description }}</v-card-subtitle>
         <v-tabs
           v-model="tab"
           bg-color="transparent"
@@ -28,44 +28,51 @@
           <v-tab value="captions">Captions</v-tab>
           <v-tab value="fileinfo">File Info</v-tab>
         </v-tabs>
+      </div>
+    </template>
+    <v-list>
+      <v-card-text>
+        <v-tabs-window v-model="tab">
+          <v-tabs-window-item value="comments">
+            <Comments @go-to-timestamp="goToTimestamp"></Comments>
+          </v-tabs-window-item>
 
-        <v-card-text>
-          <v-tabs-window v-model="tab">
-            <v-tabs-window-item value="comments"> One </v-tabs-window-item>
+          <v-tabs-window-item value="captions"> Two </v-tabs-window-item>
 
-            <v-tabs-window-item value="captions"> Two </v-tabs-window-item>
-
-            <v-tabs-window-item value="fileinfo">
-              <v-list>
-                <v-list-item
-                  v-for="item in metadataDisplay"
-                  :key="item.key"
-                >
-                  <div class="d-flex justify-between">
-                    <span class="flex-1 text-disabled">{{ item.name }}</span>
-                    <span class="flex-1">{{ asset.metadata[item.key] }}</span>
-                  </div>
-                  <v-divider class="my-4"></v-divider>
-                </v-list-item>
-              </v-list>
-            </v-tabs-window-item>
-          </v-tabs-window>
-        </v-card-text>
-      </v-card>
+          <v-tabs-window-item value="fileinfo">
+            <v-list>
+              <v-list-item
+                v-for="item in metadataDisplay"
+                :key="item.key"
+              >
+                <div class="d-flex justify-between">
+                  <span class="flex-1 text-disabled">{{ item.name }}</span>
+                  <span class="flex-1">{{ asset.metadata[item.key] }}</span>
+                </div>
+                <v-divider class="my-4"></v-divider>
+              </v-list-item>
+            </v-list>
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </v-card-text>
     </v-list>
   </v-navigation-drawer>
 </template>
 <script setup>
 import { useVideoStore } from "~/store/video"
+import { useAssetStore } from "~/store/asset"
 
 const route = useRoute()
-const pb = usePocketbase()
-const asset = ref({})
 const tab = ref(null)
 const videoPlayer = ref(null)
 
 const videoStore = useVideoStore()
+const assetStore = useAssetStore()
 const { videoPlayerDetails } = storeToRefs(videoStore)
+const { asset } = storeToRefs(assetStore)
+const { loadAsset } = assetStore
+
+loadAsset(route.params.id)
 
 const metadataDisplay = [
   { name: "File Name", key: "fileName" },
@@ -78,19 +85,20 @@ const metadataDisplay = [
   { name: "Audio Format", key: "audioFormat" },
   { name: "Audio Sample Rate", key: "audioSampleRate" },
 ]
-try {
-  const assetResult = await pb.collection("assets").getOne(route.params.id)
-  asset.value = assetResult
-  asset.value.mediaURL = pb.files.getUrl(assetResult, assetResult.media)
-} catch (error) {}
 
 const pauseVideo = () => {
   if (videoPlayer.value && !videoPlayerDetails.value.paused) {
     videoPlayer.value.pause()
   }
 }
+
+const goToTimestamp = function (timestamp) {
+  if (videoPlayer.value) {
+    videoPlayer.value.goToTimestamp(timestamp)
+  }
+}
 </script>
-<style>
+<style lang="scss">
 .flex-1 {
   flex: 1;
 }

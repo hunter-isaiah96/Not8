@@ -8,14 +8,17 @@
           label="Leave your comment here..."
           v-model="comment"
           @input="pauseVideo"
+          :disabled="addingComment"
         >
           <template v-slot:prepend>
             <v-avatar
               color="primary"
               size="30"
             >
-              I
-              <!-- <v-img></v-img> -->
+              <v-img
+                :alt="user.username"
+                :src="user.avatar"
+              ></v-img>
             </v-avatar>
           </template>
         </v-text-field>
@@ -40,13 +43,15 @@
               class="ml-2 mt-0 pt-0"
               color="primary"
               v-model="commentAtTimestamp"
+              :disabled="addingComment"
             ></v-checkbox>
           </v-card>
         </label>
         <v-spacer></v-spacer>
         <v-btn
-          @click="addComment"
           icon
+          @click="submitComment()"
+          :disabled="addingComment"
         >
           <v-icon>mdi-send</v-icon>
         </v-btn>
@@ -56,14 +61,40 @@
 </template>
 <script setup>
 import { useVideoStore } from "~/store/video"
+import { useUserStore } from "~/store/user"
+import { useCommentsStore } from "~/store/comments"
+import { useAssetStore } from "~/store/asset"
+
 const videoStore = useVideoStore()
-const { currentTime, comments } = storeToRefs(videoStore)
+const userStore = useUserStore()
+const commentsStore = useCommentsStore()
+const assetStore = useAssetStore()
+
+const { currentTime, videoPlayerDetails } = storeToRefs(videoStore)
+const { user } = storeToRefs(userStore)
+const { asset } = storeToRefs(assetStore)
+const { addComment } = commentsStore
 const comment = ref("")
 const commentAtTimestamp = ref(false)
 const emit = defineEmits(["pause-video"])
 
-const addComment = function () {
-  comments.value.push()
+const addingComment = ref(false)
+
+const submitComment = async function () {
+  addingComment.value = true
+  try {
+    await addComment({
+      asset: asset.value.id,
+      user: user.value.id,
+      text: comment.value,
+      timed: commentAtTimestamp.value,
+      timestamp: videoPlayerDetails.value.currentTime,
+    })
+    comment.value = ""
+  } catch (e) {
+  } finally {
+    addingComment.value = false
+  }
 }
 
 const pauseVideo = function () {

@@ -85,9 +85,9 @@ const uploadAsset = async function () {
       ...uploadForm,
       user: user.id,
     }
-    const createdRecord = await pb.collection("assets").create(formData)
+    const createdAsset = await pb.collection("assets").create(formData)
     closeDialog()
-    navigateTo(`/asset/view/${createdRecord.id}`)
+    navigateTo(`/asset/view/${createdAsset.id}`)
   } catch (error) {
     console.log(error)
   } finally {
@@ -122,7 +122,7 @@ const selectFile = async function (event) {
             uploadForm.metadata.duration = videoMetadata.duration
             uploadForm.metadata.height = videoMetadata.Height
             uploadForm.metadata.width = videoMetadata.Width
-            uploadForm.metadata.aspectRatio = videoMetadata.DisplayAspectRatio
+            uploadForm.metadata.aspectRatio = useFilters().getAspectRatioString(videoMetadata.Width, videoMetadata.Height)
             uploadForm.metadata.frameCount = videoMetadata.FrameCount
             uploadForm.metadata.fps = videoMetadata.FrameRate
             uploadForm.metadata.audioFormat = audioMetaData.Format

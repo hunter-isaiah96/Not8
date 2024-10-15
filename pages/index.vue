@@ -20,7 +20,7 @@
             <v-avatar>
               <v-img
                 :alt="user.username"
-                :src="avatar"
+                :src="user.avatar"
               ></v-img>
             </v-avatar>
           </v-btn>
@@ -39,13 +39,15 @@
   </v-app>
 </template>
 <script setup>
+import { useUserStore } from "~/store/user"
+
 definePageMeta({
   middleware: "auth",
 })
 
 const pb = usePocketbase()
-const user = pb.authStore.model
-const avatar = pb.files.getUrl(user, user.avatar, { thumb: "100x100" })
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
 const uploadDialog = ref(false)
 
 const logout = function () {
