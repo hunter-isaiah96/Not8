@@ -24,29 +24,33 @@
         </v-text-field>
       </div>
       <div class="d-flex align-center mt-2">
-        <label class="cursor-pointer pa-0">
-          <v-card
-            class="d-flex align-center rounded caption px-2"
-            color="background"
-            height="40"
-          >
-            <v-icon
-              small
-              class="mr-2"
-              :color="commentAtTimestamp ? 'primary' : ''"
+        <v-tooltip
+          :text="commentAtTimestamp ? 'Remove Timestamp' : 'Add Timestamp'"
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <label
+              class="cursor-pointer pa-0"
+              v-bind="props"
             >
-              mdi-alarm
-            </v-icon>
-            <span :class="{ 'text-primary': commentAtTimestamp }">{{ currentTime }}</span>
-            <v-checkbox
-              hide-details
-              class="ml-2 mt-0 pt-0"
-              color="primary"
-              v-model="commentAtTimestamp"
-              :disabled="addingComment"
-            ></v-checkbox>
-          </v-card>
-        </label>
+              <v-icon
+                small
+                :color="commentAtTimestamp ? 'primary' : ''"
+              >
+                mdi-alarm
+              </v-icon>
+              <!-- <span :class="{ 'text-primary': commentAtTimestamp }">{{ currentTime }}</span> -->
+              <v-checkbox
+                hide-details
+                class="ml-2 mt-0 pt-0 d-none"
+                color="primary"
+                v-model="commentAtTimestamp"
+                :disabled="addingComment"
+              ></v-checkbox>
+            </label>
+          </template>
+        </v-tooltip>
+
         <v-spacer></v-spacer>
         <v-btn
           icon

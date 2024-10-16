@@ -76,6 +76,7 @@ loadAsset(route.params.id)
 
 const metadataDisplay = [
   { name: "File Name", key: "fileName" },
+  { name: "Size", key: "size" },
   { name: "Format", key: "format" },
   { name: "Height", key: "height" },
   { name: "Width", key: "width" },

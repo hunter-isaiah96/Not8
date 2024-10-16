@@ -69,11 +69,26 @@ export const useFilters = () => {
     return "just now"
   }
 
+  function formatBytes(bytes) {
+    const units = ["Bytes", "KB", "MB", "GB", "TB"]
+    let i = 0
+
+    // Loop to find the appropriate unit
+    while (bytes >= 1024 && i < units.length - 1) {
+      bytes /= 1024
+      i++
+    }
+
+    // Return formatted value with 2 decimal places
+    return `${bytes.toFixed(2)} ${units[i]}`
+  }
+
   return {
     formatTime,
     getAspectRatioString,
     clamp,
     getTimestampPercentage,
     timeAgo,
+    formatBytes,
   }
 }

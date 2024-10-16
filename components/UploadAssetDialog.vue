@@ -52,6 +52,7 @@
 <script setup>
 import { ref, reactive, defineProps, defineEmits } from "vue"
 const pb = usePocketbase()
+const filters = useFilters()
 
 const props = defineProps({
   value: {
@@ -114,16 +115,17 @@ const selectFile = async function (event) {
           console.log(generalMetadata, videoMetadata)
           uploadForm.metadata.fileName = file.name
           if (uploadForm.title === "") {
-            uploadForm.title = generalMetadata.Title
+            uploadForm.title = file.name.split(".")[0]
           }
           uploadForm.metadata.format = generalMetadata.Format
 
           if (file.type.startsWith("video/")) {
             uploadForm.type = "video"
+            uploadForm.metadata.size = filters.formatBytes(file.size)
             uploadForm.metadata.duration = generalMetadata.Duration
             uploadForm.metadata.height = videoMetadata.Height
             uploadForm.metadata.width = videoMetadata.Width
-            uploadForm.metadata.aspectRatio = useFilters().getAspectRatioString(videoMetadata.Width, videoMetadata.Height)
+            uploadForm.metadata.aspectRatio = filters.getAspectRatioString(videoMetadata.Width, videoMetadata.Height)
             uploadForm.metadata.frameCount = Math.round(generalMetadata.Duration * videoMetadata.FrameRate)
             uploadForm.metadata.fps = videoMetadata.FrameRate
             uploadForm.metadata.audioFormat = audioMetaData.Format

@@ -11,44 +11,44 @@
         <span>&nbsp;-&nbsp;</span>
         <span class="text-subtitle-2 text-capitalize opacity-40">{{ useFilters().timeAgo(comment.created) }}</span>
         <v-spacer></v-spacer>
-        <div v-if="user.id == comment.user">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn
-                icon="mdi-dots-vertical"
-                density="comfortable"
-                size="x-small"
-                class="mr-2"
-                v-bind="props"
-              ></v-btn>
-            </template>
-            <v-card>
-              <v-list>
-                <v-list-item append-icon="mdi-pencil"> Edit </v-list-item>
-                <v-list-item
-                  @click="deleteComment(comment.id)"
-                  base-color="error"
-                  append-icon="mdi-delete"
-                >
-                  Delete
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-        </div>
+        <v-menu v-if="user.id == comment.user && controls">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              icon="mdi-dots-vertical"
+              density="comfortable"
+              size="x-small"
+              class="mr-2"
+              v-bind="props"
+            ></v-btn>
+          </template>
+          <v-card>
+            <v-list>
+              <v-list-item append-icon="mdi-pencil"> Edit </v-list-item>
+              <v-list-item
+                @click="deleteComment(comment.id)"
+                base-color="error"
+                append-icon="mdi-delete"
+              >
+                Delete
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
       </div>
     </template>
     <template v-slot:subtitle>
-      <div v-if="comment.timed">
-        <span
-          class="text-white bg-primary cursor-pointer px-1"
-          @click="goToTimestamp"
-        >
-          {{ commentTime }}
+      <div>
+        <span v-if="comment.timed">
+          <span
+            class="text-white bg-primary cursor-pointer px-1"
+            @click="goToTimestamp"
+          >
+            {{ commentTime }}
+          </span>
+          <span>&nbsp;</span>
         </span>
-        <span>&nbsp;</span>
+        <span class="text-subtitle-2">{{ comment.text }}</span>
       </div>
-      <span class="text-subtitle-2">{{ comment.text }}</span>
     </template>
     <v-card-text
       v-if="controls"
