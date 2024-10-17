@@ -1,23 +1,23 @@
 <template>
-  <v-row>
+  <v-list>
     <v-empty-state
       v-if="comments.length == 0"
       icon="mdi-comment-text-outline"
       title="No Comments..."
       text="It's quiet in here. Start the conversation by leaving the first comment"
     ></v-empty-state>
-    <v-col
+    <v-list-item
       v-else
-      cols="12"
       v-for="comment in comments"
       :key="comment.id"
+      class="px-0"
     >
       <Comment
         @go-to-timestamp="goToTimestamp(comment.timestamp)"
         :comment="comment"
       ></Comment>
-    </v-col>
-  </v-row>
+    </v-list-item>
+  </v-list>
 </template>
 <script setup>
 import { useCommentsStore } from "~/store/comments"

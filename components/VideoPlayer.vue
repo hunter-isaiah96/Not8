@@ -38,14 +38,21 @@
         <template v-slot:activator="{ props }">
           <v-btn
             icon
-            class="comment-stamp"
+            class="comment-stamp overflow-hidden"
             color="primary"
             density="compact"
             size="x-small"
             v-bind="props"
             @click="goToTimestamp(comment.timestamp)"
             :style="getCommentStampStyle(comment.timestamp)"
-          />
+          >
+            <template v-slot:default>
+              <v-img
+                :width="12"
+                :src="pb.getFileUrl(comment.expand.user, comment.expand.user.avatar)"
+              ></v-img>
+            </template>
+          </v-btn>
         </template>
         <Comment
           :controls="false"
@@ -136,6 +143,8 @@
 import { ref, computed, onBeforeUnmount } from "vue"
 import { useCommentsStore } from "~/store/comments"
 import { useVideoStore } from "~/store/video"
+
+const pb = usePocketbase()
 
 const filters = useFilters()
 const videoStore = useVideoStore()

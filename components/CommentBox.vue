@@ -1,7 +1,7 @@
 <template>
-  <v-card class="mt-4">
-    <v-card-text>
-      <div>
+  <v-card elevation="0">
+    <v-card-text class="pa-2 pb-0">
+      <v-form @submit.prevent="submitComment">
         <v-text-field
           hide-details
           variant="underlined"
@@ -9,24 +9,23 @@
           v-model="comment"
           @input="pauseVideo"
           :disabled="addingComment"
+          class="comment-input"
         >
           <template v-slot:prepend>
-            <v-avatar
-              color="primary"
-              size="30"
+            <span
+              v-if="commentAtTimestamp"
+              class="text-subtitle-2 text-capitalize bg-primary px-2 mr-2"
             >
-              <v-img
-                :alt="user.username"
-                :src="user.avatar"
-              ></v-img>
-            </v-avatar>
+              {{ currentTime }}
+            </span>
           </template>
         </v-text-field>
-      </div>
+      </v-form>
       <div class="d-flex align-center mt-2">
         <v-tooltip
           :text="commentAtTimestamp ? 'Remove Timestamp' : 'Add Timestamp'"
           location="top"
+          open-delay="700"
         >
           <template v-slot:activator="{ props }">
             <label
@@ -54,8 +53,10 @@
         <v-spacer></v-spacer>
         <v-btn
           icon
-          @click="submitComment()"
+          @click="submitComment"
           :disabled="addingComment"
+          size="small"
+          flat
         >
           <v-icon>mdi-send</v-icon>
         </v-btn>
@@ -63,6 +64,13 @@
     </v-card-text>
   </v-card>
 </template>
+<style lang="scss" scoped>
+.comment-input {
+  :deep(.v-input__prepend) {
+    margin: 0 !important;
+  }
+}
+</style>
 <script setup>
 import { useVideoStore } from "~/store/video"
 import { useUserStore } from "~/store/user"

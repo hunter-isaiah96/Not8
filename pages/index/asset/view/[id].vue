@@ -6,7 +6,6 @@
           ref="videoPlayer"
           :asset="asset"
         ></VideoPlayer>
-        <CommentBox @pause-video="pauseVideo"></CommentBox>
       </v-col>
     </v-row>
   </main>
@@ -31,7 +30,7 @@
       </div>
     </template>
     <v-list>
-      <v-card-text>
+      <v-card-text class="py-0">
         <v-tabs-window v-model="tab">
           <v-tabs-window-item value="comments">
             <Comments @go-to-timestamp="goToTimestamp"></Comments>
@@ -56,6 +55,14 @@
         </v-tabs-window>
       </v-card-text>
     </v-list>
+    <template v-slot:append>
+      <div
+        v-show="tab === 'comments'"
+        class="pa-2"
+      >
+        <CommentBox></CommentBox>
+      </div>
+    </template>
   </v-navigation-drawer>
 </template>
 <script setup>

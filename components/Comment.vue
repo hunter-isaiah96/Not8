@@ -1,19 +1,19 @@
 <template>
-  <v-card>
+  <v-card color="background">
     <template v-slot:prepend>
       <v-avatar color="primary">
-        <v-img :src="user.avatar"></v-img>
+        <v-img :src="avatar"></v-img>
       </v-avatar>
     </template>
     <template v-slot:title>
       <div class="d-flex align-center">
         <span class="text-subtitle-2 text-capitalize">{{ comment.expand.user.username }}</span>
-        <span>&nbsp;-&nbsp;</span>
-        <span class="text-subtitle-2 text-capitalize opacity-40">{{ useFilters().timeAgo(comment.created) }}</span>
+        <span class="text-subtitle-2 text-capitalize opacity-40">&nbsp;-&nbsp;{{ useFilters().timeAgo(comment.created) }}</span>
         <v-spacer></v-spacer>
         <v-menu v-if="user.id == comment.user && controls">
           <template v-slot:activator="{ props }">
             <v-btn
+              color="transparent"
               icon="mdi-dots-vertical"
               density="comfortable"
               size="x-small"
@@ -51,7 +51,7 @@
       </div>
     </template>
     <v-card-text
-      v-if="controls"
+      v-if="user.id == comment.user && controls"
       class="d-flex"
     >
       <v-btn
@@ -69,12 +69,6 @@ import { useUserStore } from "~/store/user"
 import { useVideoStore } from "~/store/video"
 import { useCommentsStore } from "~/store/comments"
 const pb = usePocketbase()
-const userStore = useUserStore()
-const videoStore = useVideoStore()
-const commentsStore = useCommentsStore()
-const { user } = storeToRefs(userStore)
-const { videoPlayerDetails } = storeToRefs(videoStore)
-const { deleteComment } = commentsStore
 const props = defineProps({
   comment: Object,
   controls: {
@@ -82,6 +76,13 @@ const props = defineProps({
     default: true,
   },
 })
+const userStore = useUserStore()
+const videoStore = useVideoStore()
+const commentsStore = useCommentsStore()
+const { user } = storeToRefs(userStore)
+const { videoPlayerDetails } = storeToRefs(videoStore)
+const { deleteComment } = commentsStore
+const avatar = pb.getFileUrl(props.comment.expand.user, props.comment.expand.user.avatar)
 
 const emit = defineEmits(["goToTimestamp"])
 
