@@ -18,19 +18,25 @@
             v-model="uploadForm.title"
             :disabled="uploadingAsset"
           ></v-text-field>
-          <v-textarea
-            label="Description"
-            v-model="uploadForm.description"
-            :disabled="uploadingAsset"
-          ></v-textarea>
-          <v-file-input
-            v-model="uploadForm.media"
-            ref="mediaUpload"
-            accept="video/*"
-            label="Media"
-            @change="selectFile"
-            :disabled="uploadingAsset"
-          ></v-file-input>
+          <v-row>
+            <v-col cols="6">
+              <v-file-input
+                v-model="uploadForm.media"
+                ref="mediaUpload"
+                accept="video/*"
+                label="Media"
+                @change="selectFile"
+                :disabled="uploadingAsset"
+              ></v-file-input>
+            </v-col>
+            <v-col cols="6">
+              <v-img
+                v-if="uploadForm.thumbnailURL"
+                :src="uploadForm.thumbnailURL"
+                max-height="155"
+              ></v-img>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-form>
       <template v-slot:actions>
@@ -67,10 +73,11 @@ const emit = defineEmits(["update:modelValue"])
 
 const uploadForm = reactive({
   title: "",
-  description: "",
   media: null,
   metadata: {},
   version: 1,
+  thumbnailURL: null,
+  thumbnail: null,
 })
 
 // Method to close the dialog
@@ -112,7 +119,6 @@ const selectFile = async function (event) {
           const generalMetadata = result.media.track[0]
           const videoMetadata = result.media.track[1]
           const audioMetaData = result.media.track[2]
-          console.log(generalMetadata, videoMetadata)
           uploadForm.metadata.fileName = file.name
           if (uploadForm.title === "") {
             uploadForm.title = file.name.split(".")[0]
@@ -137,6 +143,12 @@ const selectFile = async function (event) {
           console.error(`An error occurred: ${error.stack}`)
         })
     })
+
+    const thumbnail = await getVideoThumbnail(file)
+    const thumbnailURL = URL.createObjectURL(thumbnail)
+
+    uploadForm.thumbnailURL = thumbnailURL
+    uploadForm.thumbnail = thumbnail
   }
 }
 </script>

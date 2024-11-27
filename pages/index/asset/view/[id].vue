@@ -1,7 +1,10 @@
 <template>
   <main>
-    <v-row justify="center">
-      <v-col cols="9">
+    <v-row
+      justify="center"
+      align="center"
+    >
+      <v-col cols="12">
         <VideoPlayer
           ref="videoPlayer"
           :asset="asset"
@@ -13,11 +16,35 @@
     width="500"
     location="right"
     floating
+    permanent
   >
     <template v-slot:prepend>
       <div class="pa-2">
-        <v-card-title>{{ asset.title }}</v-card-title>
-        <v-card-subtitle>{{ asset.description }}</v-card-subtitle>
+        <v-card-title>
+          <div v-if="!editControls.editTitle">
+            <span>{{ asset.title }}</span>
+            <v-btn
+              class="ml-2"
+              size="x-small"
+              icon="mdi-pencil"
+              @click="editTitle(true)"
+            ></v-btn>
+          </div>
+          <v-card v-else>
+            <v-text-field
+              v-model="editControls.videoTitle"
+              hide-details
+            ></v-text-field>
+            <v-card-actions>
+              <v-btn @click="editTitle(false)">Cancel</v-btn>
+              <v-btn
+                @click="updateTitle()"
+                color="primary"
+                >Update</v-btn
+              >
+            </v-card-actions>
+          </v-card>
+        </v-card-title>
         <v-tabs
           v-model="tab"
           bg-color="transparent"
@@ -29,32 +56,26 @@
         </v-tabs>
       </div>
     </template>
-    <v-list>
-      <v-card-text class="py-0">
-        <v-tabs-window v-model="tab">
-          <v-tabs-window-item value="comments">
-            <Comments @go-to-timestamp="goToTimestamp"></Comments>
-          </v-tabs-window-item>
-
-          <v-tabs-window-item value="captions"> Two </v-tabs-window-item>
-
-          <v-tabs-window-item value="fileinfo">
-            <v-list>
-              <v-list-item
-                v-for="item in metadataDisplay"
-                :key="item.key"
-              >
-                <div class="d-flex justify-between">
-                  <span class="flex-1 text-disabled">{{ item.name }}</span>
-                  <span class="flex-1">{{ asset.metadata[item.key] }}</span>
-                </div>
-                <v-divider class="my-4"></v-divider>
-              </v-list-item>
-            </v-list>
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-card-text>
-    </v-list>
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item value="comments">
+        <Comments @go-to-timestamp="goToTimestamp"></Comments>
+      </v-tabs-window-item>
+      <v-tabs-window-item value="captions"> Two </v-tabs-window-item>
+      <v-tabs-window-item value="fileinfo">
+        <v-list>
+          <v-list-item
+            v-for="item in metadataDisplay"
+            :key="item.key"
+          >
+            <div class="d-flex justify-between">
+              <span class="flex-1 text-disabled">{{ item.name }}</span>
+              <span class="flex-1">{{ asset.metadata[item.key] }}</span>
+            </div>
+            <v-divider class="my-4"></v-divider>
+          </v-list-item>
+        </v-list>
+      </v-tabs-window-item>
+    </v-tabs-window>
     <template v-slot:append>
       <div
         v-show="tab === 'comments'"
@@ -68,10 +89,20 @@
 <script setup>
 import { useVideoStore } from "~/store/video"
 import { useAssetStore } from "~/store/asset"
+const pb = usePocketbase()
 
 const route = useRoute()
 const tab = ref(null)
 const videoPlayer = ref(null)
+
+const editControls = reactive({
+  videoTitle: "",
+  editTitle: false,
+  updatingTitle: false,
+  videoDescription: "",
+  editDescription: false,
+  updatingDescription: false,
+})
 
 const videoStore = useVideoStore()
 const assetStore = useAssetStore()
@@ -104,6 +135,20 @@ const goToTimestamp = function (timestamp) {
   if (videoPlayer.value) {
     videoPlayer.value.goToTimestamp(timestamp)
   }
+}
+
+const editTitle = (edit) => {
+  editControls.editTitle = edit
+  editControls.videoTitle = asset.value.title
+}
+const updateTitle = async () => {
+  try {
+    await pb.collection("assets").update(asset.value.id, {
+      title: editControls.videoTitle,
+    })
+    editControls.editTitle = false
+    asset.value.title = editControls.videoTitle
+  } catch (e) {}
 }
 </script>
 <style lang="scss">

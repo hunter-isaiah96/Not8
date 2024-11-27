@@ -1,19 +1,29 @@
 <template>
   <div v-if="props.asset.mediaURL">
-    <video
-      ref="videoPlayer"
-      class="d-block"
-      @click="togglePlay"
-      @playing="setPlaying"
-      @pause="setPaused"
-      @durationchange="setDuration"
-      @dblclick="setFullscreen"
+    <div
+      class="video-wrapper"
+      @click="startPinnedComment"
     >
-      <source
-        :src="props.asset.mediaURL"
-        type="video/mp4"
-      />
-    </video>
+      <video
+        ref="videoPlayer"
+        class="d-block"
+        @playing="setPlaying"
+        @pause="setPaused"
+        @durationchange="setDuration"
+        @dblclick="setFullscreen"
+      >
+        <source
+          :src="props.asset.mediaURL"
+          type="video/mp4"
+        />
+      </video>
+      <div v-if="newPinnedComment">
+        <NewPinnedComment
+          :properties="newPinnedComment"
+          @close="closePinnedComment"
+        ></NewPinnedComment>
+      </div>
+    </div>
 
     <v-slider
       v-model="currentSeek"
@@ -66,7 +76,7 @@
       color="#20222b"
       density="compact"
     >
-      <v-row>
+      <v-row no-gutters>
         <v-col cols="4">
           <v-btn
             icon
@@ -154,6 +164,8 @@ const props = defineProps({ asset: Object })
 
 const videoPlayer = ref(null)
 const currentSeek = ref(0)
+const newPinnedComment = ref(null)
+
 let wasPlayingBeforeSeek = false
 let animationFrameId = null
 
@@ -163,6 +175,35 @@ const { timestampedComments } = storeToRefs(commentsStore)
 const speeds = [0.25, 0.5, 0.75, 1, 1.5, 2, 3]
 const timeFormats = ["Standard", "Frames"]
 
+const startPinnedComment = (e) => {
+  // Find the closest parent element with the class .comment-box
+  const parentElement = e.target.closest(".comment-box") // This will find the closest parent with .comment-box
+
+  // If the parent element with .comment-box is not found (i.e., the click was outside .comment-box)
+  if (!parentElement) {
+    // Get bounding rectangle of the wrapper div (the element clicked)
+    const rect = videoPlayer.value.getBoundingClientRect()
+
+    // Calculate click position relative to the div
+    const xPosition = e.clientX - rect.left
+    const yPosition = e.clientY - rect.top
+
+    // Convert to percentages
+    const xPercent = (xPosition / rect.width) * 100
+    const yPercent = (yPosition / rect.height) * 100
+
+    // Save the new pinned comment position
+    newPinnedComment.value = {
+      x: xPercent,
+      y: yPercent,
+    }
+
+    console.log(newPinnedComment.value)
+  }
+}
+const closePinnedComment = () => {
+  newPinnedComment.value = null
+}
 /* Video Player Controls */
 const togglePlay = () => (videoPlayer.value.paused ? videoPlayer.value.play() : videoPlayer.value.pause())
 
@@ -239,6 +280,10 @@ defineExpose({
 </script>
 
 <style lang="scss">
+.video-wrapper {
+  position: relative;
+}
+
 video {
   width: 100%;
   aspect-ratio: 16/9;

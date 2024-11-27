@@ -1,5 +1,5 @@
 <template>
-  <v-list>
+  <v-list class="pa-2">
     <v-empty-state
       v-if="comments.length == 0"
       icon="mdi-comment-text-outline"

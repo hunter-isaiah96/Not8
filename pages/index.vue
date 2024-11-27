@@ -33,7 +33,10 @@
       </v-menu>
     </v-app-bar>
     <v-main>
-      <v-container fluid>
+      <v-container
+        class="fill-height"
+        fluid
+      >
         <NuxtPage></NuxtPage>
       </v-container>
     </v-main>

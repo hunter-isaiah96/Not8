@@ -101,6 +101,7 @@ const submitComment = async function () {
       text: comment.value,
       timed: commentAtTimestamp.value,
       timestamp: videoPlayerDetails.value.currentTime,
+      type: "comment",
     })
     comment.value = ""
   } catch (e) {

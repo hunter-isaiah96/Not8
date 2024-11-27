@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row class="fill-height">
     <v-col
       cols="3"
       v-for="item in assets"

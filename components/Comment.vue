@@ -17,7 +17,6 @@
               icon="mdi-dots-vertical"
               density="comfortable"
               size="x-small"
-              class="mr-2"
               v-bind="props"
             ></v-btn>
           </template>
