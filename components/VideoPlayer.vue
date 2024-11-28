@@ -23,6 +23,13 @@
           @close="closePinnedComment"
         ></NewPinnedComment>
       </div>
+      <div v-if="videoPlayerDetails.paused">
+        <PinnedComment
+          v-for="comment in comments"
+          :key="comment.id"
+          :comment="comment"
+        ></PinnedComment>
+      </div>
     </div>
 
     <v-slider
@@ -162,6 +169,8 @@ const commentsStore = useCommentsStore()
 
 const props = defineProps({ asset: Object })
 
+const { comments } = storeToRefs(commentsStore)
+
 const videoPlayer = ref(null)
 const currentSeek = ref(0)
 const newPinnedComment = ref(null)
@@ -175,35 +184,6 @@ const { timestampedComments } = storeToRefs(commentsStore)
 const speeds = [0.25, 0.5, 0.75, 1, 1.5, 2, 3]
 const timeFormats = ["Standard", "Frames"]
 
-const startPinnedComment = (e) => {
-  // Find the closest parent element with the class .comment-box
-  const parentElement = e.target.closest(".comment-box") // This will find the closest parent with .comment-box
-
-  // If the parent element with .comment-box is not found (i.e., the click was outside .comment-box)
-  if (!parentElement) {
-    // Get bounding rectangle of the wrapper div (the element clicked)
-    const rect = videoPlayer.value.getBoundingClientRect()
-
-    // Calculate click position relative to the div
-    const xPosition = e.clientX - rect.left
-    const yPosition = e.clientY - rect.top
-
-    // Convert to percentages
-    const xPercent = (xPosition / rect.width) * 100
-    const yPercent = (yPosition / rect.height) * 100
-
-    // Save the new pinned comment position
-    newPinnedComment.value = {
-      x: xPercent,
-      y: yPercent,
-    }
-
-    console.log(newPinnedComment.value)
-  }
-}
-const closePinnedComment = () => {
-  newPinnedComment.value = null
-}
 /* Video Player Controls */
 const togglePlay = () => (videoPlayer.value.paused ? videoPlayer.value.play() : videoPlayer.value.pause())
 
@@ -216,6 +196,10 @@ const setFullscreen = () => {
   if (videoPlayer.value.requestFullscreen) videoPlayer.value.requestFullscreen()
   else if (videoPlayer.value.webkitRequestFullscreen) videoPlayer.value.webkitRequestFullscreen()
   else if (videoPlayer.value.msRequestFullscreen) videoPlayer.value.msRequestFullscreen()
+}
+
+const pause = () => {
+  videoPlayer.value.pause()
 }
 
 /* Video State Handlers */
@@ -271,10 +255,44 @@ const timeFormated = computed(() =>
     : `${Math.round(videoPlayerDetails.value.currentTime * parseFloat(props.asset?.metadata.fps))}`
 )
 
+// Pinned Comment Functionality
+
+const startPinnedComment = (e) => {
+  pause()
+  // Find the closest parent element with the class .comment-box
+  const parentElement = e.target.closest(".comment-box") // This will find the closest parent with .comment-box
+
+  // If the parent element with .comment-box is not found (i.e., the click was outside .comment-box)
+  if (!parentElement) {
+    // Get bounding rectangle of the wrapper div (the element clicked)
+    const rect = videoPlayer.value.getBoundingClientRect()
+
+    // Calculate click position relative to the div
+    const xPosition = e.clientX - rect.left
+    const yPosition = e.clientY - rect.top
+
+    // Convert to percentages
+    const xPercent = (xPosition / rect.width) * 100
+    const yPercent = (yPosition / rect.height) * 100
+
+    // Save the new pinned comment position
+    newPinnedComment.value = {
+      x: xPercent,
+      y: yPercent,
+    }
+
+    console.log(newPinnedComment.value)
+  }
+}
+
+const closePinnedComment = () => {
+  newPinnedComment.value = null
+}
+
 onBeforeUnmount(() => cancelAnimationFrame(animationFrameId))
 
 defineExpose({
-  pause: () => videoPlayer.value.pause(),
+  pause,
   goToTimestamp,
 })
 </script>

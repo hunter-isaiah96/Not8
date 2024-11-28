@@ -20,6 +20,7 @@
     >
       <template v-slot:append>
         <v-btn
+          :disabled="addingComment"
           size="x-small"
           icon="mdi-close"
           @click="close"
@@ -27,7 +28,9 @@
       </template>
       <v-card-text class="py-0">
         <v-text-field
+          :disabled="addingComment"
           label="New Comment..."
+          v-model="comment"
           hide-details
         ></v-text-field>
       </v-card-text>
@@ -35,8 +38,10 @@
         <v-list-item class="w-100">
           <template v-slot:append>
             <v-btn
+              :disabled="addingComment"
               color="primary"
               icon="mdi-send"
+              @click="submitComment"
             ></v-btn>
           </template>
         </v-list-item>
@@ -46,15 +51,23 @@
 </template>
 
 <script setup>
-// const videoStore = useVideoStore()
-// const userStore = useUserStore()
-// const commentsStore = useCommentsStore()
-// const assetStore = useAssetStore()
+import { useVideoStore } from "~/store/video"
+import { useUserStore } from "~/store/user"
+import { useCommentsStore } from "~/store/comments"
+import { useAssetStore } from "~/store/asset"
 
-// const { currentTime, videoPlayerDetails } = storeToRefs(videoStore)
-// const { user } = storeToRefs(userStore)
-// const { asset } = storeToRefs(assetStore)
-// const { addComment } = commentsStore
+const videoStore = useVideoStore()
+const userStore = useUserStore()
+const commentsStore = useCommentsStore()
+const assetStore = useAssetStore()
+
+const { videoPlayerDetails } = storeToRefs(videoStore)
+const { user } = storeToRefs(userStore)
+const { asset } = storeToRefs(assetStore)
+const { addComment } = commentsStore
+const comment = ref("")
+const addingComment = ref(false)
+
 const emit = defineEmits({
   close: () => true,
 })
@@ -68,6 +81,26 @@ const translateAmount = avatarSize / 2
 
 const close = () => {
   emit("close")
+}
+
+const submitComment = async () => {
+  addingComment.value = true
+  try {
+    await addComment({
+      asset: asset.value.id,
+      user: user.value.id,
+      text: comment.value,
+      timed: true,
+      timestamp: videoPlayerDetails.value.currentTime,
+      type: "pinned",
+      metadata: props.properties,
+    })
+    comment.value = ""
+  } catch (e) {
+    console.log(e)
+  } finally {
+    addingComment.value = false
+  }
 }
 </script>
 
