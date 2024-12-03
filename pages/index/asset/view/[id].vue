@@ -20,22 +20,24 @@
     permanent
   >
     <template v-slot:prepend>
-      <v-card-title class="pa-2">
-        <EditableField
-          :value="asset.title"
-          @update="updateTitle"
-        ></EditableField>
+      <div class="pa-2">
+        <v-card-title>
+          <EditableField
+            :value="asset.title"
+            @update="updateTitle"
+          ></EditableField>
 
-        <v-tabs
-          v-model="tab"
-          bg-color="transparent"
-          grow
-        >
-          <v-tab value="comments">Comments</v-tab>
-          <v-tab value="captions">Captions</v-tab>
-          <v-tab value="fileinfo">File Info</v-tab>
-        </v-tabs>
-      </v-card-title>
+          <v-tabs
+            v-model="tab"
+            bg-color="transparent"
+            grow
+          >
+            <v-tab value="comments">Comments</v-tab>
+            <v-tab value="captions">Captions</v-tab>
+            <v-tab value="fileinfo">File Info</v-tab>
+          </v-tabs>
+        </v-card-title>
+      </div>
     </template>
 
     <v-tabs-window v-model="tab">
