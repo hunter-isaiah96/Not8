@@ -65,7 +65,6 @@
 
 <script setup>
 import { useUserStore } from "~/store/user"
-import { useVideoStore } from "~/store/video"
 import { useCommentsStore } from "~/store/comments"
 const pb = usePocketbase()
 const props = defineProps({
@@ -74,12 +73,11 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  timeFormat: Array,
 })
 const userStore = useUserStore()
-const videoStore = useVideoStore()
 const commentsStore = useCommentsStore()
 const { user } = storeToRefs(userStore)
-const { videoPlayerDetails } = storeToRefs(videoStore)
 const { deleteComment } = commentsStore
 const avatar = pb.getFileUrl(props.comment.expand.user, props.comment.expand.user.avatar)
 
@@ -90,7 +88,7 @@ const goToTimestamp = () => {
 }
 
 const commentTime = computed(() => {
-  if (videoPlayerDetails.value.selectedTimeFormat[0] === "Standard") return useFilters().formatTime(props.comment.timestamp)
+  if (props.timeFormat[0] == "Standard") return useFilters().formatTime(props.comment.timestamp)
   else return `${Math.round(props.comment.timestamp * props.comment.expand.asset.metadata.fps)}`
 })
 </script>

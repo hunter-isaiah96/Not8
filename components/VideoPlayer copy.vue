@@ -10,28 +10,28 @@
         @playing="setPlaying"
         @pause="setPaused"
         @durationchange="setDuration"
-        @dblclick="toggleFullscreen"
+        @dblclick="setFullscreen"
       >
         <source
           :src="props.asset.mediaURL"
           type="video/mp4"
         />
       </video>
-
-      <!-- <NewPinnedComment
-        v-if="newPinnedComment"
-        :properties="newPinnedComment"
-        @close="closePinnedComment"
-      /> -->
-      <!-- <PinnedComment
-        v-if="videoPlayerDetails.paused"
-        v-for="comment in pinnedComments"
-        :key="comment.id"
-        :comment="comment"
-      /> -->
+      <div v-if="newPinnedComment">
+        <NewPinnedComment
+          :properties="newPinnedComment"
+          @close="closePinnedComment"
+        ></NewPinnedComment>
+      </div>
+      <div v-if="videoPlayerDetails.paused">
+        <PinnedComment
+          v-for="comment in pinnedComments"
+          :key="comment.id"
+          :comment="comment"
+        ></PinnedComment>
+      </div>
     </div>
 
-    <!-- Slider Control -->
     <v-slider
       v-model="currentSeek"
       hide-details
@@ -43,7 +43,6 @@
       @end="stopSeek"
     />
 
-    <!-- Timestamped Comments -->
     <div class="comment-stamps bg-surface">
       <v-menu
         v-for="comment in timestampedComments"
@@ -64,22 +63,22 @@
             @click="goToTimestamp(comment.timestamp)"
             :style="getCommentStampStyle(comment.timestamp)"
           >
-            <v-img
-              :width="12"
-              :src="pb.getFileUrl(comment.expand.user, comment.expand.user.avatar)"
-            />
+            <template v-slot:default>
+              <v-img
+                :width="12"
+                :src="pb.getFileUrl(comment.expand.user, comment.expand.user.avatar)"
+              ></v-img>
+            </template>
           </v-btn>
         </template>
         <Comment
           :controls="false"
           :comment="comment"
-          @goToTimestamp="goToTimestamp(comment.timestamp)"
-          :time-format="videoPlayerDetails.selectedTimeFormat"
+          @go-to-timestamp="goToTimestamp(comment.timestamp)"
         />
       </v-menu>
     </div>
 
-    <!-- Toolbar -->
     <v-toolbar
       color="#20222b"
       density="compact"
@@ -92,24 +91,53 @@
           >
             <v-icon>{{ videoPlayerDetails.paused ? "mdi-play" : "mdi-pause" }}</v-icon>
           </v-btn>
-          <SpeedMenu
-            :speed="videoPlayerDetails.speed"
-            @select="setVideoSpeed"
-          />
+          <v-menu transition="scale-transition">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                icon
+                v-bind="props"
+                >{{ videoPlayerDetails.speed }}X</v-btn
+              >
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="speed in speeds"
+                :key="speed"
+                @click="setVideoSpeed(speed)"
+              >
+                <v-list-item-title>{{ speed }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </v-col>
 
         <v-col
           class="d-flex align-center justify-center"
           cols="4"
         >
-          <TimeFormatMenu
-            :time-format="videoPlayerDetails.selectedTimeFormat"
-            :current-time="currentTime"
-            :total-time="totalTime"
-            :video-player-time="videoPlayerDetails.currentTime"
-            :fps="asset?.metadata.fps"
-            @updateFormat="updateFormat"
-          />
+          <v-menu location="top">
+            <template v-slot:activator="{ props, isActive }">
+              <v-btn
+                :append-icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                v-bind="props"
+                >{{ timeFormated }}</v-btn
+              >
+            </template>
+            <v-card subtitle="Time Format">
+              <v-list
+                class="pt-0"
+                v-model:selected="videoPlayerDetails.selectedTimeFormat"
+              >
+                <v-list-item
+                  v-for="timeFormat in timeFormats"
+                  :key="timeFormat"
+                  :value="timeFormat"
+                >
+                  <v-list-item-title>{{ timeFormat }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
         </v-col>
 
         <v-col
@@ -119,7 +147,7 @@
           <v-btn icon><v-icon>mdi-closed-caption</v-icon></v-btn>
           <v-btn
             icon
-            @click="toggleFullscreen"
+            @click="setFullscreen"
             ><v-icon>mdi-fullscreen</v-icon></v-btn
           >
         </v-col>
@@ -129,18 +157,23 @@
 </template>
 
 <script setup>
+import { ref, computed, onBeforeUnmount } from "vue"
 import { useCommentsStore } from "~/store/comments"
 import { useVideoStore } from "~/store/video"
 
 const pb = usePocketbase()
+
 const filters = useFilters()
 const videoStore = useVideoStore()
 const commentsStore = useCommentsStore()
 
 const props = defineProps({ asset: Object })
 
+const { comments } = storeToRefs(commentsStore)
+
 const videoPlayer = ref(null)
 const currentSeek = ref(0)
+const newPinnedComment = ref(null)
 
 let wasPlayingBeforeSeek = false
 let animationFrameId = null
@@ -148,14 +181,26 @@ let animationFrameId = null
 const { videoPlayerDetails, currentTime, totalTime } = storeToRefs(videoStore)
 const { timestampedComments } = storeToRefs(commentsStore)
 
-/* Methods */
+const speeds = [0.25, 0.5, 0.75, 1, 1.5, 2, 3]
+const timeFormats = ["Standard", "Frames"]
+
+/* Video Player Controls */
 const togglePlay = () => (videoPlayer.value.paused ? videoPlayer.value.play() : videoPlayer.value.pause())
+
 const setVideoSpeed = (speed) => {
   videoPlayerDetails.value.speed = speed
   videoPlayer.value.playbackRate = speed
 }
-const toggleFullscreen = () => videoPlayer.value.requestFullscreen?.()
-const pause = () => videoPlayer.value.pause()
+
+const setFullscreen = () => {
+  if (videoPlayer.value.requestFullscreen) videoPlayer.value.requestFullscreen()
+  else if (videoPlayer.value.webkitRequestFullscreen) videoPlayer.value.webkitRequestFullscreen()
+  else if (videoPlayer.value.msRequestFullscreen) videoPlayer.value.msRequestFullscreen()
+}
+
+const pause = () => {
+  videoPlayer.value.pause()
+}
 
 /* Video State Handlers */
 const setPlaying = () => {
@@ -180,7 +225,7 @@ const updateFrame = () => {
 /* Slider Handlers */
 const startSeek = () => {
   wasPlayingBeforeSeek = !videoPlayer.value.paused
-  pause()
+  videoPlayer.value.pause()
 }
 
 const onSeek = (value) => {
@@ -189,30 +234,58 @@ const onSeek = (value) => {
   videoPlayerDetails.value.currentTime = newTime
 }
 
-const stopSeek = () => {
-  wasPlayingBeforeSeek && videoPlayer.value.play()
-  cancelAnimationFrame(animationFrameId)
-}
+const stopSeek = () => wasPlayingBeforeSeek && videoPlayer.value.play()
 
-/* Utility Functions */
-const getCommentStampStyle = (timestamp) => {
-  const left = `${filters.clamp((timestamp / videoPlayerDetails.value.duration) * 100, 0, 99)}%`
-  const transform = `translateX(-50%) translateY(-50%)`
-  return { left, transform }
-}
-
-const updateFormat = (format) => {
-  videoPlayerDetails.value.selectedTimeFormat = [format]
-}
+const getTimestampPercentage = (timestamp) => filters.getTimestampPercentage(timestamp, videoPlayerDetails.value.duration)
 
 const goToTimestamp = (timestamp) => {
   videoPlayer.value.currentTime = timestamp
   updateFrame()
 }
+
+const getCommentStampStyle = (timestamp) => {
+  const left = `${filters.clamp(getTimestampPercentage(timestamp), 0, 99.3)}%`
+  const transform = `translateX(-${getTimestampPercentage(timestamp) < 1.3 ? 0 : 50}%) translateY(-50%)`
+  return { left, transform }
+}
+
+const timeFormated = computed(() => {
+  videoPlayerDetails.value.selectedTimeFormat[0] === "Standard"
+    ? `${currentTime.value} / ${totalTime.value}`
+    : `${Math.round(videoPlayerDetails.value.currentTime * parseFloat(props.asset?.metadata.fps))}`
+})
+
+// Pinned Comment Functionality
+const pinnedComments = computed(() =>
+  timestampedComments.value.filter((com) => {
+    const time = Math.floor(com.timestamp * 1e6) / 1e6
+    return com.type == "pinned" && time == videoPlayerDetails.value.currentTime.toFixed(6)
+  })
+)
+
+const startPinnedComment = (e) => {
+  if (e.target.closest(".pinned-comment, .comment-box")) return
+
+  pause()
+
+  const rect = videoPlayer.value.getBoundingClientRect()
+  const xPercent = ((e.clientX - rect.left) / rect.width) * 100
+  const yPercent = ((e.clientY - rect.top) / rect.height) * 100
+
+  newPinnedComment.value = { x: xPercent, y: yPercent }
+  console.log(newPinnedComment.value)
+}
+
+const closePinnedComment = () => {
+  newPinnedComment.value = null
+}
+
+onBeforeUnmount(() => cancelAnimationFrame(animationFrameId))
+
 defineExpose({
+  pause,
   goToTimestamp,
 })
-onBeforeUnmount(() => cancelAnimationFrame(animationFrameId))
 </script>
 
 <style lang="scss">

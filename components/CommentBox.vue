@@ -23,38 +23,29 @@
       </v-form>
       <div class="d-flex align-center mt-2">
         <v-tooltip
-          :text="commentAtTimestamp ? 'Remove Timestamp' : 'Add Timestamp'"
+          :text="timestampTooltip"
           location="top"
           open-delay="700"
         >
           <template v-slot:activator="{ props }">
-            <label
-              class="cursor-pointer pa-0"
+            <v-btn
+              icon
+              :color="commentAtTimestamp ? 'primary' : ''"
               v-bind="props"
+              @click="toggleTimestamp"
+              :disabled="addingComment"
             >
-              <v-icon
-                small
-                :color="commentAtTimestamp ? 'primary' : ''"
-              >
-                mdi-alarm
-              </v-icon>
-              <!-- <span :class="{ 'text-primary': commentAtTimestamp }">{{ currentTime }}</span> -->
-              <v-checkbox
-                hide-details
-                class="ml-2 mt-0 pt-0 d-none"
-                color="primary"
-                v-model="commentAtTimestamp"
-                :disabled="addingComment"
-              ></v-checkbox>
-            </label>
+              <v-icon small>mdi-alarm</v-icon>
+            </v-btn>
           </template>
         </v-tooltip>
 
         <v-spacer></v-spacer>
+
         <v-btn
           icon
           @click="submitComment"
-          :disabled="addingComment"
+          :disabled="addingComment || !comment.trim()"
           size="small"
           flat
         >
@@ -64,14 +55,9 @@
     </v-card-text>
   </v-card>
 </template>
-<style lang="scss" scoped>
-.comment-input {
-  :deep(.v-input__prepend) {
-    margin: 0 !important;
-  }
-}
-</style>
+
 <script setup>
+import { ref } from "vue"
 import { useVideoStore } from "~/store/video"
 import { useUserStore } from "~/store/user"
 import { useCommentsStore } from "~/store/comments"
@@ -82,35 +68,51 @@ const userStore = useUserStore()
 const commentsStore = useCommentsStore()
 const assetStore = useAssetStore()
 
-const { currentTime, videoPlayerDetails } = storeToRefs(videoStore)
+const { currentTime } = storeToRefs(videoStore)
 const { user } = storeToRefs(userStore)
 const { asset } = storeToRefs(assetStore)
 const { addComment } = commentsStore
+
 const comment = ref("")
 const commentAtTimestamp = ref(false)
-const emit = defineEmits(["pause-video"])
-
 const addingComment = ref(false)
+const emit = defineEmits(["pauseVideo"])
 
-const submitComment = async function () {
+const pauseVideo = () => emit("pauseVideo")
+
+const toggleTimestamp = () => {
+  commentAtTimestamp.value = !commentAtTimestamp.value
+}
+
+const timestampTooltip = computed(() => (commentAtTimestamp.value ? "Remove Timestamp" : "Add Timestamp"))
+
+const submitComment = async () => {
+  if (!comment.trim()) return
+
   addingComment.value = true
   try {
     await addComment({
       asset: asset.value.id,
       user: user.value.id,
-      text: comment.value,
+      text: comment.value.trim(),
       timed: commentAtTimestamp.value,
-      timestamp: videoPlayerDetails.value.currentTime,
+      timestamp: currentTime.value,
       type: "comment",
     })
     comment.value = ""
+    commentAtTimestamp.value = false
   } catch (e) {
+    console.error(e)
   } finally {
     addingComment.value = false
   }
 }
-
-const pauseVideo = function () {
-  emit("pause-video")
-}
 </script>
+
+<style lang="scss" scoped>
+.comment-input {
+  :deep(.v-input__prepend) {
+    margin: 0 !important;
+  }
+}
+</style>

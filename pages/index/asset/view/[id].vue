@@ -12,6 +12,7 @@
       </v-col>
     </v-row>
   </main>
+
   <v-navigation-drawer
     width="500"
     location="right"
@@ -19,32 +20,12 @@
     permanent
   >
     <template v-slot:prepend>
-      <div class="pa-2">
-        <v-card-title>
-          <div v-if="!editControls.editTitle">
-            <span>{{ asset.title }}</span>
-            <v-btn
-              class="ml-2"
-              size="x-small"
-              icon="mdi-pencil"
-              @click="editTitle(true)"
-            ></v-btn>
-          </div>
-          <v-card v-else>
-            <v-text-field
-              v-model="editControls.videoTitle"
-              hide-details
-            ></v-text-field>
-            <v-card-actions>
-              <v-btn @click="editTitle(false)">Cancel</v-btn>
-              <v-btn
-                @click="updateTitle()"
-                color="primary"
-                >Update</v-btn
-              >
-            </v-card-actions>
-          </v-card>
-        </v-card-title>
+      <v-card-title class="pa-2">
+        <EditableField
+          :value="asset.title"
+          @update="updateTitle"
+        ></EditableField>
+
         <v-tabs
           v-model="tab"
           bg-color="transparent"
@@ -54,13 +35,14 @@
           <v-tab value="captions">Captions</v-tab>
           <v-tab value="fileinfo">File Info</v-tab>
         </v-tabs>
-      </div>
+      </v-card-title>
     </template>
+
     <v-tabs-window v-model="tab">
       <v-tabs-window-item value="comments">
-        <Comments @go-to-timestamp="goToTimestamp"></Comments>
+        <Comments @go-to-timestamp="goToTimestamp" />
       </v-tabs-window-item>
-      <v-tabs-window-item value="captions"> Two </v-tabs-window-item>
+      <v-tabs-window-item value="captions">Captions content here</v-tabs-window-item>
       <v-tabs-window-item value="fileinfo">
         <v-list>
           <v-list-item
@@ -71,46 +53,39 @@
               <span class="flex-1 text-disabled">{{ item.name }}</span>
               <span class="flex-1">{{ asset.metadata[item.key] }}</span>
             </div>
-            <v-divider class="my-4"></v-divider>
+            <v-divider class="my-4" />
           </v-list-item>
         </v-list>
       </v-tabs-window-item>
     </v-tabs-window>
+
     <template v-slot:append>
       <div
-        v-show="tab === 'comments'"
+        v-if="tab === 'comments'"
         class="pa-2"
       >
-        <CommentBox></CommentBox>
+        <CommentBox @pauseVideo="pauseVideo" />
       </div>
     </template>
   </v-navigation-drawer>
 </template>
+
 <script setup>
-import { useVideoStore } from "~/store/video"
+import { ref } from "vue"
+import { useRoute } from "vue-router"
+import { storeToRefs } from "pinia"
 import { useAssetStore } from "~/store/asset"
-const pb = usePocketbase()
+import EditableField from "~/components/EditableField.vue" // New reusable component
+import { usePocketbase } from "~/composables/pocketbase" // Assumed location
 
 const route = useRoute()
-const tab = ref(null)
+const pb = usePocketbase()
+
 const videoPlayer = ref(null)
+const tab = ref(null)
 
-const editControls = reactive({
-  videoTitle: "",
-  editTitle: false,
-  updatingTitle: false,
-  videoDescription: "",
-  editDescription: false,
-  updatingDescription: false,
-})
-
-const videoStore = useVideoStore()
 const assetStore = useAssetStore()
-const { videoPlayerDetails } = storeToRefs(videoStore)
 const { asset } = storeToRefs(assetStore)
-const { loadAsset } = assetStore
-
-loadAsset(route.params.id)
 
 const metadataDisplay = [
   { name: "File Name", key: "fileName" },
@@ -125,33 +100,23 @@ const metadataDisplay = [
   { name: "Audio Sample Rate", key: "audioSampleRate" },
 ]
 
-const pauseVideo = () => {
-  if (videoPlayer.value && !videoPlayerDetails.value.paused) {
-    videoPlayer.value.pause()
-  }
-}
+assetStore.loadAsset(route.params.id)
 
-const goToTimestamp = function (timestamp) {
-  if (videoPlayer.value) {
-    videoPlayer.value.goToTimestamp(timestamp)
-  }
-}
+const pauseVideo = () => videoPlayer.value?.pause()
 
-const editTitle = (edit) => {
-  editControls.editTitle = edit
-  editControls.videoTitle = asset.value.title
-}
-const updateTitle = async () => {
+const goToTimestamp = (timestamp) => videoPlayer.value?.goToTimestamp(timestamp)
+
+const updateTitle = async (newTitle) => {
   try {
-    await pb.collection("assets").update(asset.value.id, {
-      title: editControls.videoTitle,
-    })
-    editControls.editTitle = false
-    asset.value.title = editControls.videoTitle
-  } catch (e) {}
+    await pb.collection("assets").update(asset.value.id, { title: newTitle })
+    asset.value.title = newTitle
+  } catch (e) {
+    console.error("Failed to update title:", e)
+  }
 }
 </script>
-<style lang="scss">
+
+<style lang="scss" scoped>
 .flex-1 {
   flex: 1;
 }

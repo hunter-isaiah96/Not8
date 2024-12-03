@@ -1,57 +1,56 @@
 <template>
   <div
-    class="new-pin"
+    class="pinned-comment"
     :style="{ '--x': properties.x + '%', '--y': properties.y + '%', transform: `translate(-${translateAmount}px, -${translateAmount}px)` }"
   >
-    <!-- Avatar -->
-    <v-avatar
-      class="avatar"
-      :size="avatarSize"
-    >
-      <v-img :src="user.avatar" />
-    </v-avatar>
-
-    <!-- Card with textbox -->
-    <v-card
-      min-width="400"
-      class="comment-box"
-      :class="{
-        top: properties.y >= 50,
-        bottom: properties.y < 50,
-        left: properties.x >= 50,
-        right: properties.x < 50,
-      }"
-      title="Isaiah"
-    >
-      <template v-slot:append>
-        <v-btn
-          :disabled="addingComment"
-          size="x-small"
-          icon="mdi-close"
-          @click="close"
-        ></v-btn>
+    <v-menu mod>
+      <template v-slot:activator="{ props }">
+        <v-avatar
+          :size="avatarSize"
+          v-bind="props"
+        >
+          <v-img
+            :alt="user.username"
+            :src="user.avatar"
+          ></v-img>
+        </v-avatar>
       </template>
-      <v-card-text class="py-0">
-        <v-text-field
-          :disabled="addingComment"
-          label="New Comment..."
-          v-model="comment"
-          hide-details
-        ></v-text-field>
-      </v-card-text>
-      <v-card-actions>
-        <v-list-item class="w-100">
-          <template v-slot:append>
-            <v-btn
-              :disabled="addingComment"
-              color="primary"
-              icon="mdi-send"
-              @click="submitComment"
-            ></v-btn>
-          </template>
-        </v-list-item>
-      </v-card-actions>
-    </v-card>
+      <v-card
+        min-width="400"
+        class="comment-box"
+        title="Isaiah"
+        :style="{ right: properties.x > 50 ? '0px' : 'unset' }"
+      >
+        <template v-slot:append>
+          <v-btn
+            :disabled="addingComment"
+            size="x-small"
+            icon="mdi-close"
+            @click="close"
+          ></v-btn>
+        </template>
+        <v-card-text class="py-0">
+          <v-text-field
+            :disabled="addingComment"
+            label="New Comment..."
+            v-model="comment"
+            hide-details
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-list-item class="w-100">
+            <template v-slot:append>
+              <v-btn
+                :disabled="addingComment"
+                color="primary"
+                icon="mdi-send"
+                @click="submitComment"
+              ></v-btn>
+            </template>
+          </v-list-item>
+        </v-card-actions>
+      </v-card>
+    </v-menu>
   </div>
 </template>
 
@@ -110,31 +109,11 @@ const submitComment = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
-.new-pin {
+<style scoped>
+.pinned-comment {
   position: absolute;
   left: var(--x); /* Position horizontally based on x percent */
   top: var(--y); /* Position vertically based on y percent */
   z-index: 1000;
-}
-
-.comment-box {
-  position: absolute;
-
-  &.top {
-    bottom: 30px;
-  }
-
-  &.bottom {
-    top: 30px;
-  }
-
-  &.left {
-    right: 30px; /* Adjust based on your spacing needs */
-  }
-
-  &.right {
-    left: 30px; /* Adjust based on your spacing needs */
-  }
 }
 </style>

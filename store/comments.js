@@ -13,6 +13,7 @@ export const useCommentsStore = defineStore("commentsStore", () => {
         expand: "user, asset",
       })
       comments.value = fetchedComments
+      console.log(fetchedComments)
     } catch (error) {
       console.log(error)
     }
@@ -35,6 +36,5 @@ export const useCommentsStore = defineStore("commentsStore", () => {
   }
 
   const timestampedComments = computed(() => comments.value.filter((value) => value.timed))
-
   return { comments, fetchComments, addComment, deleteComment, timestampedComments }
 })

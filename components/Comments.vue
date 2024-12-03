@@ -13,6 +13,7 @@
       class="px-0"
     >
       <Comment
+        :time-format="videoPlayerDetails.selectedTimeFormat"
         @go-to-timestamp="goToTimestamp(comment.timestamp)"
         :comment="comment"
       ></Comment>
@@ -21,12 +22,17 @@
 </template>
 <script setup>
 import { useCommentsStore } from "~/store/comments"
+import { useVideoStore } from "~/store/video"
+
 const route = useRoute()
 
 const commentStore = useCommentsStore()
 const { comments } = storeToRefs(commentStore)
+
 const { fetchComments } = commentStore
 fetchComments(route.params.id)
+const videoStore = useVideoStore()
+const { videoPlayerDetails } = storeToRefs(videoStore)
 
 const emits = defineEmits(["goToTimestamp"])
 

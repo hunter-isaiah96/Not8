@@ -10,11 +10,11 @@
       :close-on-content-click="false"
     >
       <template v-slot:activator="{ props }">
-        <v-avatar v-bind="props">
-          <!-- <v-img
-            :width="12"
-            :src="pb.getFileUrl(props.comment.expand.user, props.comment.expand.user.avatar)"
-          ></v-img> -->
+        <v-avatar
+          :size="avatarSize"
+          v-bind="props"
+        >
+          <v-img :src="pb.getFileUrl(comment.expand.user, comment.expand.user.avatar)"></v-img>
         </v-avatar>
       </template>
       <Comment
@@ -28,9 +28,8 @@
 const props = defineProps({
   comment: Object,
 })
-console.log(props.comment.expand.user)
 const pb = usePocketbase()
-const avatarSize = 35
+const avatarSize = 25
 const translateAmount = avatarSize / 2
 </script>
 <style lang="scss">
