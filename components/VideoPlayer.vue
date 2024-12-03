@@ -17,18 +17,6 @@
           type="video/mp4"
         />
       </video>
-
-      <!-- <NewPinnedComment
-        v-if="newPinnedComment"
-        :properties="newPinnedComment"
-        @close="closePinnedComment"
-      /> -->
-      <!-- <PinnedComment
-        v-if="videoPlayerDetails.paused"
-        v-for="comment in pinnedComments"
-        :key="comment.id"
-        :comment="comment"
-      /> -->
     </div>
 
     <!-- Slider Control -->
@@ -44,40 +32,11 @@
     />
 
     <!-- Timestamped Comments -->
-    <div class="comment-stamps bg-surface">
-      <v-menu
-        v-for="comment in timestampedComments"
-        :key="comment.id"
-        open-on-hover
-        close-delay="200"
-        location="top"
-        :close-on-content-click="false"
-      >
-        <template v-slot:activator="{ props }">
-          <v-btn
-            icon
-            class="comment-stamp overflow-hidden"
-            color="primary"
-            density="compact"
-            size="x-small"
-            v-bind="props"
-            @click="goToTimestamp(comment.timestamp)"
-            :style="getCommentStampStyle(comment.timestamp)"
-          >
-            <v-img
-              :width="12"
-              :src="pb.getFileUrl(comment.expand.user, comment.expand.user.avatar)"
-            />
-          </v-btn>
-        </template>
-        <Comment
-          :controls="false"
-          :comment="comment"
-          @goToTimestamp="goToTimestamp(comment.timestamp)"
-          :time-format="videoPlayerDetails.selectedTimeFormat"
-        />
-      </v-menu>
-    </div>
+    <CommentStamps
+      :timeFormat="videoPlayerDetails.selectedTimeFormat"
+      :duration="videoPlayerDetails.duration"
+      @go-to-time-stamp="goToTimestamp"
+    ></CommentStamps>
 
     <!-- Toolbar -->
     <v-toolbar
@@ -129,13 +88,8 @@
 </template>
 
 <script setup>
-import { useCommentsStore } from "~/store/comments"
 import { useVideoStore } from "~/store/video"
-
-const pb = usePocketbase()
-const filters = useFilters()
 const videoStore = useVideoStore()
-const commentsStore = useCommentsStore()
 
 const props = defineProps({ asset: Object })
 
@@ -146,7 +100,6 @@ let wasPlayingBeforeSeek = false
 let animationFrameId = null
 
 const { videoPlayerDetails, currentTime, totalTime } = storeToRefs(videoStore)
-const { timestampedComments } = storeToRefs(commentsStore)
 
 /* Methods */
 const togglePlay = () => (videoPlayer.value.paused ? videoPlayer.value.play() : videoPlayer.value.pause())
@@ -195,11 +148,6 @@ const stopSeek = () => {
 }
 
 /* Utility Functions */
-const getCommentStampStyle = (timestamp) => {
-  const left = `${filters.clamp((timestamp / videoPlayerDetails.value.duration) * 100, 0, 99)}%`
-  const transform = `translateX(-50%) translateY(-50%)`
-  return { left, transform }
-}
 
 const updateFormat = (format) => {
   videoPlayerDetails.value.selectedTimeFormat = [format]
@@ -233,16 +181,6 @@ video {
   }
   .v-slider-track {
     border-radius: 0;
-  }
-}
-
-.comment-stamps {
-  position: relative;
-  height: 20px;
-  .comment-stamp {
-    position: absolute;
-    top: 50%;
-    transform: translateY(50%);
   }
 }
 </style>
