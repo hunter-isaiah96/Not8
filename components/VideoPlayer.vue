@@ -53,7 +53,7 @@
           </v-btn>
           <SpeedMenu
             :speed="videoPlayerDetails.speed"
-            @select="setVideoSpeed"
+            @update-speed="setVideoSpeed"
           />
         </v-col>
 
