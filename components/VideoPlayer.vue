@@ -17,6 +17,7 @@
           type="video/mp4"
         />
       </video>
+      <PinnedComments v-if="videoPlayerDetails.paused"></PinnedComments>
     </div>
 
     <!-- Slider Control -->
@@ -35,7 +36,6 @@
     <CommentStamps
       :timeFormat="videoPlayerDetails.selectedTimeFormat"
       :duration="videoPlayerDetails.duration"
-      @go-to-time-stamp="goToTimestamp"
     ></CommentStamps>
 
     <!-- Toolbar -->
@@ -90,76 +90,15 @@
 <script setup>
 import { useVideoStore } from "~/store/video"
 const videoStore = useVideoStore()
-
 const props = defineProps({ asset: Object })
 
-const videoPlayer = ref(null)
-const currentSeek = ref(0)
-
-let wasPlayingBeforeSeek = false
-let animationFrameId = null
-
-const { videoPlayerDetails, currentTime, totalTime } = storeToRefs(videoStore)
-
-/* Methods */
-const togglePlay = () => (videoPlayer.value.paused ? videoPlayer.value.play() : videoPlayer.value.pause())
-const setVideoSpeed = (speed) => {
-  videoPlayerDetails.value.speed = speed
-  videoPlayer.value.playbackRate = speed
-}
-const toggleFullscreen = () => videoPlayer.value.requestFullscreen?.()
-const pause = () => videoPlayer.value.pause()
+const { videoPlayer, videoPlayerDetails, currentTime, totalTime, currentSeek } = storeToRefs(videoStore)
+const { setVideoSpeed, toggleFullscreen, togglePlay, pause, setPlaying, setPaused, setDuration, startSeek, onSeek, stopSeek, animationFrameId } = videoStore
 
 /* Video State Handlers */
-const setPlaying = () => {
-  videoPlayerDetails.value.paused = false
-  updateFrame()
-}
-
-const setPaused = () => {
-  videoPlayerDetails.value.paused = true
-  cancelAnimationFrame(animationFrameId)
-}
-
-const setDuration = (e) => (videoPlayerDetails.value.duration = e.target.duration)
-
-/* Update Frame with requestAnimationFrame */
-const updateFrame = () => {
-  videoPlayerDetails.value.currentTime = videoPlayer.value.currentTime
-  currentSeek.value = (videoPlayerDetails.value.currentTime / videoPlayerDetails.value.duration) * 100
-  animationFrameId = requestAnimationFrame(updateFrame)
-}
-
-/* Slider Handlers */
-const startSeek = () => {
-  wasPlayingBeforeSeek = !videoPlayer.value.paused
-  pause()
-}
-
-const onSeek = (value) => {
-  const newTime = (value / 100) * videoPlayerDetails.value.duration
-  videoPlayer.value.currentTime = newTime
-  videoPlayerDetails.value.currentTime = newTime
-}
-
-const stopSeek = () => {
-  wasPlayingBeforeSeek && videoPlayer.value.play()
-  cancelAnimationFrame(animationFrameId)
-}
-
-/* Utility Functions */
-
 const updateFormat = (format) => {
   videoPlayerDetails.value.selectedTimeFormat = [format]
 }
-
-const goToTimestamp = (timestamp) => {
-  videoPlayer.value.currentTime = timestamp
-  updateFrame()
-}
-defineExpose({
-  goToTimestamp,
-})
 onBeforeUnmount(() => cancelAnimationFrame(animationFrameId))
 </script>
 

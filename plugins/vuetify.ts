@@ -9,6 +9,7 @@ const myCustomDarkTheme: ThemeDefinition = {
     background: "#040B1B",
     surface: "#1C222E",
     primary: "#5B52FE",
+    pinned: "#4FFF93",
   },
 }
 

@@ -18,15 +18,18 @@
         </v-avatar>
       </template>
       <Comment
-        :controls="false"
+        :time-format="timeFormat"
+        @go-to-timestamp="goToTimestamp(comment.timestamp)"
         :comment="comment"
-      />
+        :controls="false"
+      ></Comment>
     </v-menu>
   </div>
 </template>
 <script setup>
 const props = defineProps({
   comment: Object,
+  timeFormat: Array,
 })
 const pb = usePocketbase()
 const avatarSize = 25

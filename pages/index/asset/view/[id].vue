@@ -77,8 +77,6 @@ import { ref } from "vue"
 import { useRoute } from "vue-router"
 import { storeToRefs } from "pinia"
 import { useAssetStore } from "~/store/asset"
-import EditableField from "~/components/EditableField.vue" // New reusable component
-import { usePocketbase } from "~/composables/pocketbase" // Assumed location
 
 const route = useRoute()
 const pb = usePocketbase()

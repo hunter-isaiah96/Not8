@@ -14,7 +14,6 @@
     >
       <Comment
         :time-format="videoPlayerDetails.selectedTimeFormat"
-        @go-to-timestamp="goToTimestamp(comment.timestamp)"
         :comment="comment"
       ></Comment>
     </v-list-item>
@@ -33,14 +32,4 @@ const { fetchComments } = commentStore
 fetchComments(route.params.id)
 const videoStore = useVideoStore()
 const { videoPlayerDetails } = storeToRefs(videoStore)
-
-const emits = defineEmits(["goToTimestamp"])
-
-const goToTimestamp = function (timestamp) {
-  emits("goToTimestamp", timestamp)
-}
-
-defineExpose({
-  goToTimestamp,
-})
 </script>

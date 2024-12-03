@@ -39,8 +39,9 @@
       <div>
         <span v-if="comment.timed">
           <span
-            class="text-white bg-primary cursor-pointer px-1"
-            @click="goToTimestamp"
+            class="text-white cursor-pointer px-1"
+            :class="{ 'bg-primary': comment.type == 'comment', 'bg-pinned': comment.type == 'pinned' }"
+            @click="goToTimestamp(comment.timestamp)"
           >
             {{ commentTime }}
           </span>
@@ -64,8 +65,13 @@
 </template>
 
 <script setup>
+import { useVideoStore } from "~/store/video"
 import { useUserStore } from "~/store/user"
 import { useCommentsStore } from "~/store/comments"
+
+const videoStore = useVideoStore()
+const { goToTimestamp } = videoStore
+
 const pb = usePocketbase()
 const props = defineProps({
   comment: Object,
@@ -82,10 +88,6 @@ const { deleteComment } = commentsStore
 const avatar = pb.getFileUrl(props.comment.expand.user, props.comment.expand.user.avatar)
 
 const emit = defineEmits(["goToTimestamp"])
-
-const goToTimestamp = () => {
-  emit("goToTimestamp")
-}
 
 const commentTime = computed(() => {
   if (props.timeFormat[0] == "Standard") return useFilters().formatTime(props.comment.timestamp)

@@ -68,7 +68,7 @@ const userStore = useUserStore()
 const commentsStore = useCommentsStore()
 const assetStore = useAssetStore()
 
-const { currentTime } = storeToRefs(videoStore)
+const { videoPlayerDetails, currentTime } = storeToRefs(videoStore)
 const { user } = storeToRefs(userStore)
 const { asset } = storeToRefs(assetStore)
 const { addComment } = commentsStore
@@ -87,18 +87,19 @@ const toggleTimestamp = () => {
 const timestampTooltip = computed(() => (commentAtTimestamp.value ? "Remove Timestamp" : "Add Timestamp"))
 
 const submitComment = async () => {
-  if (!comment.trim()) return
+  if (!comment.value.trim()) return
 
   addingComment.value = true
   try {
-    await addComment({
+    const commentObj = {
       asset: asset.value.id,
       user: user.value.id,
       text: comment.value.trim(),
       timed: commentAtTimestamp.value,
-      timestamp: currentTime.value,
+      timestamp: videoPlayerDetails.value.currentTime,
       type: "comment",
-    })
+    }
+    await addComment(commentObj)
     comment.value = ""
     commentAtTimestamp.value = false
   } catch (e) {

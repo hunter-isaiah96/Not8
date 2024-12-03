@@ -36,23 +36,24 @@
 </template>
 <script setup>
 import { useCommentsStore } from "~/store/comments"
+import { useVideoStore } from "~/store/video"
+const videoStore = useVideoStore()
+const commentsStore = useCommentsStore()
 const pb = usePocketbase()
 const filters = useFilters()
-const commentsStore = useCommentsStore()
 
 const props = defineProps({
   timeFormat: Array,
   duration: Number,
 })
-const emit = defineEmits(["goToTimeStamp"])
+
 const { timestampedComments } = storeToRefs(commentsStore)
+const { goToTimestamp } = videoStore
+
 const getCommentStampStyle = (timestamp) => {
   const left = `${filters.clamp((timestamp / props.duration) * 100, 0, 99)}%`
-  const transform = `translateX(-50%) translateY(-50%)`
+  const transform = filters.clamp((timestamp / props.duration) * 100, 0, 99) > 0.5 ? `translateX(-50%) translateY(-50%)` : `translateX(0%) translateY(-50%)`
   return { left, transform }
-}
-const goToTimestamp = (timestamp) => {
-  emit("goToTimeStamp", timestamp)
 }
 </script>
 <style lang="scss" scoped>
