@@ -12,10 +12,33 @@ export const useCommentsStore = defineStore("commentsStore", () => {
         filter: `asset="${assetId}"`,
         expand: "user, asset",
       })
-      comments.value = fetchedComments
+
+      comments.value = organizeComments(fetchedComments)
+      console.log(comments.value)
     } catch (error) {
       console.log(error)
     }
+  }
+
+  function organizeComments(comments) {
+    const commentMap = {}
+
+    // Initialize map
+    comments.forEach((comment) => {
+      commentMap[comment.id] = { ...comment, replies: [] }
+    })
+
+    // Organize replies
+    const topLevelComments = []
+    comments.forEach((comment) => {
+      if (comment.parent) {
+        commentMap[comment.parent].replies.push(commentMap[comment.id])
+      } else {
+        topLevelComments.push(commentMap[comment.id])
+      }
+    })
+
+    return topLevelComments
   }
 
   const addComment = async function (comment) {

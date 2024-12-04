@@ -111,6 +111,7 @@ onBeforeUnmount(() => cancelAnimationFrame(animationFrameId))
 .video-wrapper {
   position: relative;
   overflow: hidden;
+  background: #000;
 }
 
 video {
