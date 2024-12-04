@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="full-width">
     <v-row
       justify="center"
       align="center"
@@ -26,7 +26,6 @@
             :value="asset.title"
             @update="updateTitle"
           ></EditableField>
-
           <v-tabs
             v-model="tab"
             bg-color="transparent"
@@ -42,9 +41,11 @@
 
     <v-tabs-window v-model="tab">
       <v-tabs-window-item value="comments">
-        <Comments @go-to-timestamp="goToTimestamp" />
+        <Comments />
       </v-tabs-window-item>
-      <v-tabs-window-item value="captions">Captions content here</v-tabs-window-item>
+      <v-tabs-window-item value="captions">
+        <Captions></Captions>
+      </v-tabs-window-item>
       <v-tabs-window-item value="fileinfo">
         <v-list>
           <v-list-item
@@ -60,13 +61,12 @@
         </v-list>
       </v-tabs-window-item>
     </v-tabs-window>
-
     <template v-slot:append>
       <div
         v-if="tab === 'comments'"
         class="pa-2"
       >
-        <CommentBox @pauseVideo="pauseVideo" />
+        <CommentBox />
       </div>
     </template>
   </v-navigation-drawer>
@@ -102,10 +102,6 @@ const metadataDisplay = [
 
 assetStore.loadAsset(route.params.id)
 
-const pauseVideo = () => videoPlayer.value?.pause()
-
-const goToTimestamp = (timestamp) => videoPlayer.value?.goToTimestamp(timestamp)
-
 const updateTitle = async (newTitle) => {
   try {
     await pb.collection("assets").update(asset.value.id, { title: newTitle })
@@ -119,5 +115,8 @@ const updateTitle = async (newTitle) => {
 <style lang="scss" scoped>
 .flex-1 {
   flex: 1;
+}
+.full-width {
+  width: 100%;
 }
 </style>

@@ -5,17 +5,18 @@
     @click="startPinnedComment"
   >
     <NewPinnedComment
-      v-if="newPinnedComment"
+      v-if="newPinnedComment && videoPlayerDetails.paused"
       :properties="newPinnedComment"
       @close="closePinnedComment"
     ></NewPinnedComment>
-
-    <PinnedComment
-      v-for="comment in shownComments"
-      :key="comment.id"
-      :comment="comment"
-      :timeFormat="videoPlayerDetails.selectedTimeFormat"
-    ></PinnedComment>
+    <div v-if="videoPlayerDetails.paused">
+      <PinnedComment
+        v-for="comment in shownComments"
+        :key="comment.id"
+        :comment="comment"
+        :timeFormat="videoPlayerDetails.selectedTimeFormat"
+      ></PinnedComment>
+    </div>
   </div>
 </template>
 
@@ -27,11 +28,13 @@ const commentStore = useCommentsStore()
 const videoStore = useVideoStore()
 const { pinnedComments } = storeToRefs(commentStore)
 const { videoPlayerDetails } = storeToRefs(videoStore)
+const { pause } = videoStore
 
 const newPinnedComment = ref(null)
 const pinnedCommentsWrapper = ref(null)
 
 const startPinnedComment = (e) => {
+  pause()
   if (e.target.closest(".pinned-comment, .comment-box")) return
 
   const rect = pinnedCommentsWrapper.value.getBoundingClientRect()

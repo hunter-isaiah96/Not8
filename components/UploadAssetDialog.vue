@@ -25,7 +25,7 @@
                 ref="mediaUpload"
                 accept="video/*"
                 label="Media"
-                @change="selectFile"
+                @change="selectMediaFile"
                 :disabled="uploadingAsset"
               ></v-file-input>
             </v-col>
@@ -35,6 +35,16 @@
                 :src="uploadForm.thumbnailURL"
                 max-height="155"
               ></v-img>
+            </v-col>
+          </v-row>
+          <v-row v-if="uploadForm.type == 'video'">
+            <v-col>
+              <v-file-input
+                v-model="uploadForm.captions"
+                ref="mediaUpload"
+                label="Caption File"
+                :disabled="uploadingAsset"
+              ></v-file-input>
             </v-col>
           </v-row>
         </v-card-text>
@@ -74,7 +84,9 @@ const emit = defineEmits(["update:modelValue"])
 const uploadForm = reactive({
   title: "",
   media: null,
+  captions: null,
   metadata: {},
+  type: null,
   version: 1,
   thumbnailURL: null,
   thumbnail: null,
@@ -104,7 +116,7 @@ const uploadAsset = async function () {
 }
 
 // Select File
-const selectFile = async function (event) {
+const selectMediaFile = async function (event) {
   const fileInput = event.target
   const file = fileInput.files?.[0]
 

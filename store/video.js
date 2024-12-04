@@ -37,7 +37,7 @@ export const useVideoStore = defineStore("videoStore", () => {
   const toggleFullscreen = () => videoPlayer.value?.requestFullscreen()
 
   const pause = () => videoPlayer.value?.pause()
-
+  const isPaused = computed(() => videoPlayerDetails.paused)
   /** Video state handlers */
   const setPlaying = () => {
     videoPlayerDetails.paused = false
@@ -73,7 +73,8 @@ export const useVideoStore = defineStore("videoStore", () => {
   /** Utility methods */
   const goToTimestamp = (timestamp) => {
     if (videoPlayer.value) {
-      videoPlayer.value.currentTime = timestamp
+      const offset = 0.001
+      videoPlayer.value.currentTime = timestamp == 4.1 ? timestamp + offset : timestamp
       updateFrame()
     }
   }
@@ -96,6 +97,7 @@ export const useVideoStore = defineStore("videoStore", () => {
     togglePlay,
     toggleFullscreen,
     pause,
+    isPaused,
     setPlaying,
     setPaused,
     setDuration,

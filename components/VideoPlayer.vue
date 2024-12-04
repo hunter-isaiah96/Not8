@@ -11,13 +11,18 @@
         @pause="setPaused"
         @durationchange="setDuration"
         @dblclick="toggleFullscreen"
+        crossorigin="anonymous"
       >
         <source
           :src="props.asset.mediaURL"
           type="video/mp4"
         />
+        <track
+          :src="props.asset.captionsURL"
+          default=""
+        />
       </video>
-      <PinnedComments v-if="videoPlayerDetails.paused"></PinnedComments>
+      <PinnedComments></PinnedComments>
     </div>
 
     <!-- Slider Control -->
@@ -93,7 +98,7 @@ const videoStore = useVideoStore()
 const props = defineProps({ asset: Object })
 
 const { videoPlayer, videoPlayerDetails, currentTime, totalTime, currentSeek } = storeToRefs(videoStore)
-const { setVideoSpeed, toggleFullscreen, togglePlay, pause, setPlaying, setPaused, setDuration, startSeek, onSeek, stopSeek, animationFrameId } = videoStore
+const { setVideoSpeed, toggleFullscreen, togglePlay, setPlaying, setPaused, setDuration, startSeek, onSeek, stopSeek, animationFrameId } = videoStore
 
 /* Video State Handlers */
 const updateFormat = (format) => {
