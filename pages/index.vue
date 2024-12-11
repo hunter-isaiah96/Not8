@@ -2,7 +2,11 @@
   <v-app>
     <v-app-bar color="primary">
       <v-app-bar-title>
-        <router-link to="/">Not8</router-link>
+        <router-link
+          to="/"
+          style="text-decoration: none; color: inherit"
+          >Not8</router-link
+        >
       </v-app-bar-title>
       <v-spacer></v-spacer>
 
